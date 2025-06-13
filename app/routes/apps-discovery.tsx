@@ -31,19 +31,7 @@ function AppsDiscovery({ loaderData }: Route.ComponentProps) {
     const { data } = loaderData;
 
     if (data.error) {
-        return (
-            <Box
-                sx={{
-                    // bgcolor: '#cfe8fc',
-                    height: 'calc(100vh-56px)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
-            >
-                <BaseError error={data.error} />
-            </Box>
-        );
+        return <BaseError error={data.error} />;
     }
 
     return <BaseData data={data.appRows} />;
