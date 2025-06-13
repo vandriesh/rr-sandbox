@@ -13,7 +13,7 @@ function NavListItem({to, children}: PropsWithChildren<{to: string}>) {
                     if (isActive) {
                         return 'inline-flex items-center border-l-2 border-green-400 px-1 pt-1 text-sm font-medium text-white';
                     } else {
-                        return 'inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-white hover:border-gray-300';
+                        return 'inline-flex items-center border-l-2 border-transparent px-1 pt-1 text-sm font-medium text-white hover:border-gray-300';
                     }
                 }}
             >
