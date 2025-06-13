@@ -71,7 +71,7 @@ function AppsDiscovery({ loaderData }: Route.ComponentProps) {
         <Grid container spacing={3}>
             [filter : {JSON.stringify(filter)}
             <Grid size={10}>
-                <BaseData data={filteredData} />
+                <BaseData data={filteredData} totalCount={data.totalCount}/>
             </Grid>
             <Grid size="grow">
                 <AppsDiscoveryFilter filter={filter} onChange={updateFilter} />
