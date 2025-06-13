@@ -8,7 +8,7 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 
-import type { AppModel } from '~/Data/AppModel';
+import type { AppModel } from '~/AppsDiscovery/AppModel';
 import { useSearchParams } from 'react-router';
 
 interface Column {

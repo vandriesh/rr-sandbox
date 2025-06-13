@@ -1,9 +1,12 @@
-import { Box } from '@mui/system';
+import Grid from '@mui/material/Grid';
+
 
 import BaseError from '../common/BaseError';
-import BaseData from '../Data/BaseData';
+import BaseData from '~/AppsDiscovery/BaseData';
 
 import type { Route } from './+types/apps-discovery';
+import AppsDiscoveryFilter from '~/AppsDiscovery/Filter';
+import { useState } from 'react';
 
 export async function loader({ request }: Route.LoaderArgs) {
     const url = new URL(request.url);
@@ -29,12 +32,49 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 function AppsDiscovery({ loaderData }: Route.ComponentProps) {
     const { data } = loaderData;
+    const [filter, setFilter] = useState({
+        name: '',
+        category: '',
+    })
+
+    const updateFilter = (filter: { name: string; value: string }) => {
+        setFilter(prevFilter => {
+            return {
+                ...prevFilter,
+                [filter.name]: filter.value
+            }
+        })
+    }
+
+    const {name, category} = filter;
+
+    const filteredData = data.appRows.filter(row => {
+        if (name && row.appName.toLowerCase().indexOf(name.toLowerCase()) === -1) {
+            console.log(name, 'vs', row.appName );
+            return false;
+        }
+
+        if (category && row.category.toLowerCase().indexOf(category.toLowerCase()) === -1) {
+            return false;
+        }
+
+
+        return true;
+    })
 
     if (data.error) {
         return <BaseError error={data.error} />;
     }
 
-    return <BaseData data={data.appRows} />;
+    return (
+        <Grid container spacing={3}>
+            [filter : {JSON.stringify(filter)}
+            <Grid size={10}>
+                <BaseData data={filteredData} />
+            </Grid>
+            <Grid size="grow"><AppsDiscoveryFilter filter={filter} onChange={updateFilter}/></Grid>
+        </Grid>
+    );
 }
 
 export default AppsDiscovery;
