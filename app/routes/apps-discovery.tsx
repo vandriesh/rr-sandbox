@@ -1,6 +1,5 @@
 import Grid from '@mui/material/Grid';
 
-
 import BaseError from '../common/BaseError';
 import BaseData from '~/AppsDiscovery/BaseData';
 
@@ -11,13 +10,15 @@ import { useState } from 'react';
 export async function loader({ request }: Route.LoaderArgs) {
     const url = new URL(request.url);
     const pageSize = url.searchParams.get('pageSize') ?? '25';
+    const pageNumber = url.searchParams.get('pageNumber') ?? '0';
 
     const body = {
         appName: '',
         category: '',
-        pageNumber: 0,
-        pageSize: 50, // hardcode to "simulate" pagination
+        pageNumber,
+        pageSize, // hardcode to "simulate" pagination
     };
+
     const data = await fetch('https://recotest.pythonanywhere.com/api/v1/app-service/get-apps', {
         method: 'PUT',
         headers: {
@@ -35,22 +36,22 @@ function AppsDiscovery({ loaderData }: Route.ComponentProps) {
     const [filter, setFilter] = useState({
         name: '',
         category: '',
-    })
+    });
 
     const updateFilter = (filter: { name: string; value: string }) => {
-        setFilter(prevFilter => {
+        setFilter((prevFilter) => {
             return {
                 ...prevFilter,
-                [filter.name]: filter.value
-            }
-        })
-    }
+                [filter.name]: filter.value,
+            };
+        });
+    };
 
-    const {name, category} = filter;
+    const { name, category } = filter;
 
-    const filteredData = data.appRows.filter(row => {
+    const filteredData = data.appRows.filter((row) => {
         if (name && row.appName.toLowerCase().indexOf(name.toLowerCase()) === -1) {
-            console.log(name, 'vs', row.appName );
+            console.log(name, 'vs', row.appName);
             return false;
         }
 
@@ -58,9 +59,8 @@ function AppsDiscovery({ loaderData }: Route.ComponentProps) {
             return false;
         }
 
-
         return true;
-    })
+    });
 
     if (data.error) {
         return <BaseError error={data.error} />;
@@ -72,7 +72,9 @@ function AppsDiscovery({ loaderData }: Route.ComponentProps) {
             <Grid size={10}>
                 <BaseData data={filteredData} />
             </Grid>
-            <Grid size="grow"><AppsDiscoveryFilter filter={filter} onChange={updateFilter}/></Grid>
+            <Grid size="grow">
+                <AppsDiscoveryFilter filter={filter} onChange={updateFilter} />
+            </Grid>
         </Grid>
     );
 }
