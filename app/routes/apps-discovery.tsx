@@ -15,8 +15,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     const body = {
         appName: '',
         category: '',
-        pageNumber,
-        pageSize, // hardcode to "simulate" pagination
+        pageNumber: +pageNumber,
+        pageSize:+pageSize, // hardcode to "simulate" pagination
     };
 
     const data = await fetch('https://recotest.pythonanywhere.com/api/v1/app-service/get-apps', {
@@ -37,6 +37,10 @@ function AppsDiscovery({ loaderData }: Route.ComponentProps) {
         name: '',
         category: '',
     });
+
+    if (data.error) {
+        return <BaseError error={data.error} />;
+    }
 
     const updateFilter = (filter: { name: string; value: string }) => {
         setFilter((prevFilter) => {
@@ -62,9 +66,6 @@ function AppsDiscovery({ loaderData }: Route.ComponentProps) {
         return true;
     });
 
-    if (data.error) {
-        return <BaseError error={data.error} />;
-    }
 
     return (
         <Grid container spacing={3}>

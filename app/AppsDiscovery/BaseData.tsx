@@ -28,10 +28,10 @@ const columns: readonly Column[] = [
 
 type Props = {
     data: AppModel[];
-
+    totalCount: number
 };
 
-export default function BaseData({ data }: Props) {
+export default function BaseData({ data , totalCount}: Props) {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const pageNumber = searchParams.get('pageNumber') ?? '0';
@@ -107,7 +107,7 @@ export default function BaseData({ data }: Props) {
             <TablePagination
                 rowsPerPageOptions={[25, 50]}
                 component="div"
-                count={data.length}
+                count={totalCount}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
