@@ -55,7 +55,6 @@ function AppsDiscovery({ loaderData }: Route.ComponentProps) {
 
     const filteredData = data.appRows.filter((row) => {
         if (name && row.appName.toLowerCase().indexOf(name.toLowerCase()) === -1) {
-            console.log(name, 'vs', row.appName);
             return false;
         }
 
@@ -69,7 +68,9 @@ function AppsDiscovery({ loaderData }: Route.ComponentProps) {
 
     return (
         <Grid container spacing={3}>
+{/*
             [filter : {JSON.stringify(filter)}
+*/}
             <Grid size={10}>
                 <BaseData data={filteredData} totalCount={data.totalCount}/>
             </Grid>
