@@ -5,12 +5,20 @@ import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-    plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
+    plugins: [tailwindcss(),  tsconfigPaths(), !process.env.VITEST && reactRouter()],
+    build: {
+        outDir: './dist',
+        emptyOutDir: true,
+        reportCompressedSize: true,
+        commonjsOptions: {
+            transformMixedEsModules: true,
+        },
+    },
     test: {
         watch: false,
         globals: true,
         environment: 'jsdom',
-        include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+        include: ['{app,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
         reporters: ['default'],
         coverage: {
             reportsDirectory: './test-output/vitest/coverage',
