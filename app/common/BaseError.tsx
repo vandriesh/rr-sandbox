@@ -8,7 +8,12 @@ function BaseError({ error }: Props) {
     return (
         <Alert severity="error">
             <AlertTitle>Error</AlertTitle>
-            This is an error Alert with a scary title.
+            {error}
+            <p>
+                Refresh the page to try again.
+            </p>
         </Alert>
     )
 }
+
+export default BaseError;
