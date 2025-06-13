@@ -34,7 +34,7 @@ export default function TopNav() {
                         </div>
                         <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                             <NavLink
-                                to="dashboard"
+                                to="apps-discovery"
                                 className={({ isActive }) => {
                                     if (isActive) {
                                         return 'inline-flex items-center border-b-2 border-indigo-500 px-1 pt-1 text-sm font-medium text-gray-900';
@@ -43,10 +43,10 @@ export default function TopNav() {
                                     }
                                 }}
                             >
-                                dashboard
+                                APPS DISCOVERY
                             </NavLink>
                             <NavLink
-                                to="team"
+                                to="apps-inventory"
                                 className={({ isActive }) => {
                                     if (isActive) {
                                         return 'inline-flex items-center border-b-2 border-indigo-500 px-1 pt-1 text-sm font-medium text-gray-900';
@@ -55,20 +55,21 @@ export default function TopNav() {
                                     }
                                 }}
                             >
-                                Team
+                                APPS INVENTORY
                             </NavLink>
-                            <a
-                                href="#"
-                                className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                            <NavLink
+                                to="settings"
+                                className={({ isActive }) => {
+                                    if (isActive) {
+                                        return 'inline-flex items-center border-b-2 border-indigo-500 px-1 pt-1 text-sm font-medium text-gray-900';
+                                    } else {
+                                        return 'inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700';
+                                    }
+                                }}
                             >
-                                Projects
-                            </a>
-                            <a
-                                href="#"
-                                className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                            >
-                                Calendar
-                            </a>
+                                SETTINGS
+                            </NavLink>
+
                         </div>
                     </div>
                     <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
