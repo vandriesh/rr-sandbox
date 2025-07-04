@@ -5,51 +5,51 @@ import React, {
   useMemo,
   type PropsWithChildren,
   useCallback,
-  useEffect,
 } from "react";
 import { Worker } from "~/routes/Worker";
 
-export type WorkerId = number;
+export type WorkerId = string;
+export type JobId = string;
 
 interface Worker {
   id: WorkerId;
-  doneJobs: number[];
-  currentJob: number | null;
+  doneJobs: JobId[];
+  currentJob: JobId | null;
 }
 
 interface State {
   phase: "init" | "running" | "finished";
   workers: Record<WorkerId, Worker>;
-  lastWorkerToFinishAJob: WorkerId | null;
+  newJobIndex: number;
+  jobs: Record<JobId, WorkerId>;
   stats: {
     total: number;
     done: number;
-    // inprogress: number;
     progress: number;
   };
 }
 
 type Action =
   | { type: "START" }
-  | { type: "START_JOB"; workerId: WorkerId; jobId: number }
-  | { type: "FINISH_JOB"; workerId: WorkerId; jobId: number }
+  | { type: "START_JOB"; workerId: WorkerId; jobId: JobId }
+  | { type: "FINISH_JOB"; workerId: WorkerId; jobId: JobId }
   | { type: "ADD_WORKER" };
 
 interface WorkerContextValue {
   state: State;
   start: () => void;
   addWorker: () => void;
-  startAJob: (workerId: WorkerId) => void;
+  startAJob: (workerId: WorkerId, src?: string) => void;
 }
 
 const initialState: State = {
   phase: "init",
-  workers: [],
-  lastWorkerToFinishAJob: null,
+  workers: {},
+  newJobIndex: 0,
+  jobs: {},
   stats: {
     progress: 0,
     total: 0,
-    // inprogress: 0,
     done: 0,
   },
 };
@@ -59,8 +59,6 @@ export function percent(done: number, total: number) {
 }
 
 function workerReducer(state: State, action: Action): State {
-  console.log("action", action);
-
   switch (action.type) {
     case "START": {
       return {
@@ -69,7 +67,7 @@ function workerReducer(state: State, action: Action): State {
       };
     }
     case "ADD_WORKER": {
-      const newWorkerId = Object.keys(state.workers).length;
+      const newWorkerId = `w${Object.keys(state.workers).length}`;
 
       return {
         ...state,
@@ -84,32 +82,36 @@ function workerReducer(state: State, action: Action): State {
       };
     }
     case "START_JOB": {
-      const { workerId } = action;
+      const { workerId, jobId } = action;
 
-      const newJobId = state.stats.done + 1;
       const worker = state.workers[workerId];
-      const stats = state.stats
+      const stats = state.stats;
 
       let nextState = {
         ...state,
+        newJobIndex: state.newJobIndex + 1,
         workers: {
           ...state.workers,
           [workerId]: {
             ...worker,
-            currentJob: newJobId,
+            currentJob: jobId,
           },
+        },
+        jobs: {
+          ...state.jobs,
+          [jobId]: workerId,
         },
         stats: {
           ...stats,
-          // inprogress: stats.inprogress + 1,
-        }
+        },
       };
 
-      console.log("nextState", nextState);
+      //      console.log("after START_JOB nextState", nextState);
       return nextState;
     }
     case "FINISH_JOB": {
       const { workerId, jobId } = action;
+      const { [jobId]: _, ...jobsLeft } = state.jobs;
 
       const worker = state.workers[workerId];
       const done = state.stats.done + 1;
@@ -124,16 +126,15 @@ function workerReducer(state: State, action: Action): State {
             currentJob: null,
           },
         },
+        jobs: jobsLeft,
         stats: {
           ...state.stats,
           done,
-          // inprogress: state.stats.inprogress - 1,
           progress: percent(done, state.stats.total),
         },
-        lastWorkerToFinishAJob: workerId,
       };
 
-      console.log("nextState", newState);
+      // console.log("nextState", newState);
       return newState;
     }
     default:
@@ -156,54 +157,31 @@ export function WorkerProvider<T>({
     ...initialState,
     stats: {
       total: data.length,
-      // inprogress: 0,
       done: 0,
       progress: 0,
     },
   });
-  const { stats, lastWorkerToFinishAJob } = state;
-  // const { done, total, inprogress } = stats;
-  const { done, total } = stats;
+  const { stats, newJobIndex } = state;
+  const { total } = stats;
 
-  const start = () => dispatch({ type: "START" });
+  const start = useCallback(() => dispatch({ type: "START" }), []);
 
   const startAJob = useCallback(
-    async (workerId: WorkerId) => {
-      let newJobIndex = done + 1;
-      // let newJobIndex = done + inprogress + 1;
-      const nextJob = data[newJobIndex];
-      if (!nextJob) {
-        console.log(`%c all done ${stats.done} (BACK 1)`, "color:violet");
+    async (workerId: WorkerId, src?: string) => {
+      if (newJobIndex >= data.length) {
+        // console.log(
+        //   `%c [src:${src}] all done ${stats.done} jobs in progress ${currentJobsInProgress} , total: ${total}`,
+        //   "color:violet"
+        // );
         return;
       }
-      console.log("nextJob", newJobIndex);
-      dispatch({ type: "START_JOB", workerId, jobId: newJobIndex });
+
+      dispatch({ type: "START_JOB", workerId, jobId: `j${newJobIndex}` });
       await handler(data[newJobIndex]);
-      dispatch({ type: "FINISH_JOB", workerId, jobId: newJobIndex });
+      dispatch({ type: "FINISH_JOB", workerId, jobId: `j${newJobIndex}` });
     },
-    [done, total, data, handler]
-    // [done, total, data, handler, inprogress]
+    [newJobIndex, total, data, handler]
   );
-
-  useEffect(() => {
-    if (lastWorkerToFinishAJob === null) {
-      return;
-    }
-/*
-
-    if (done >= total) {
-      console.log(`%c all done ${stats.done} (EFFECT 1)`, "color:violet");
-      return;
-    }
-
-    console.log(`%c current done ${stats.done}`, "color:violet");
-*/
-    async function runNextJob(freeWorker: WorkerId) {
-      await startAJob(freeWorker);
-    }
-
-    void runNextJob(lastWorkerToFinishAJob);
-  }, [lastWorkerToFinishAJob, startAJob]);
 
   const addWorker = () => {
     dispatch({ type: "ADD_WORKER" });

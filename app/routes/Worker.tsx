@@ -12,14 +12,16 @@ interface WorkerProps {
 
 export function Worker({ id, count }: WorkerProps) {
   const { state, startAJob } = useWorkerContext();
-  const { stats } = state;
+  const { stats, workers } = state;
+  const { currentJob } = workers[id];
 
   const progress = percent(state.workers[id].doneJobs.length, stats.total);
 
   useEffect(() => {
-    console.log(`%c worker: ${id} : enlist into jobs `, "color:lightblue");
-    startAJob(id);
-  }, []);
+    if (currentJob === null) {
+      startAJob(id);
+    }
+  }, [currentJob]);
 
   return (
     <ProgressItem progress={progress} color="secondary">

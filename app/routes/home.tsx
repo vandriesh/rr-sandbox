@@ -1,16 +1,16 @@
 import { MultiStream } from "./MultiStream";
 
-const data = Array(10)
+const data = Array(20)
   .fill(0)
   .map((_, i: number) => i);
 
 const handler = (value: number): Promise<void> => {
-  console.log("start the job", value);
+  // console.log(`%c            -- start the job ${value}`, "color:blue");
   return new Promise((resolve) => {
     setTimeout(() => {
-      console.log("done the job", value);
-      resolve()
-    }, 2000);
+      // console.log(`%c            -- done the job ${value}`, "color:blue");
+      resolve();
+    }, 1000);
   });
 };
 
