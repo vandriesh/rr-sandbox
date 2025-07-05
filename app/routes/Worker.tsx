@@ -27,6 +27,7 @@ export function Worker({ id, count }: WorkerProps) {
     <ProgressItem progress={progress} color="secondary">
       <Box sx={{ minWidth: 35, textAlign: "right" }}>
         <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          {/*[{worker.doneJobs.join(',')} : {worker.currentJob}] */}
           {count}
         </Typography>
       </Box>

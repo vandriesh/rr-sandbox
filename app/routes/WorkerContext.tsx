@@ -20,7 +20,6 @@ interface Worker {
 interface State {
   phase: "init" | "running" | "finished";
   workers: Record<WorkerId, Worker>;
-  newJobIndex: number;
   jobs: Record<JobId, WorkerId>;
   stats: {
     total: number;
@@ -45,7 +44,6 @@ interface WorkerContextValue {
 const initialState: State = {
   phase: "init",
   workers: {},
-  newJobIndex: 0,
   jobs: {},
   stats: {
     progress: 0,
@@ -89,7 +87,6 @@ function workerReducer(state: State, action: Action): State {
 
       let nextState = {
         ...state,
-        newJobIndex: state.newJobIndex + 1,
         workers: {
           ...state.workers,
           [workerId]: {
@@ -148,6 +145,9 @@ interface ProviderProps<T> {
   data: T[];
   handler: (item: T) => Promise<void>;
 }
+
+let globalCurrentJobIndex = 0;
+
 export function WorkerProvider<T>({
   children,
   data,
@@ -161,26 +161,36 @@ export function WorkerProvider<T>({
       progress: 0,
     },
   });
-  const { stats, newJobIndex } = state;
+  const { stats, jobs } = state;
   const { total } = stats;
 
   const start = useCallback(() => dispatch({ type: "START" }), []);
 
   const startAJob = useCallback(
-    async (workerId: WorkerId, src?: string) => {
-      if (newJobIndex >= data.length) {
-        // console.log(
-        //   `%c [src:${src}] all done ${stats.done} jobs in progress ${currentJobsInProgress} , total: ${total}`,
-        //   "color:violet"
-        // );
+    async (workerId: WorkerId) => {
+      if (globalCurrentJobIndex >= data.length) {
+        console.log(
+          `%c all done ${stats.done} jobs in progress ${globalCurrentJobIndex} , total: ${total}`,
+          "color:violet"
+        );
+
         return;
       }
 
-      dispatch({ type: "START_JOB", workerId, jobId: `j${newJobIndex}` });
-      await handler(data[newJobIndex]);
-      dispatch({ type: "FINISH_JOB", workerId, jobId: `j${newJobIndex}` });
+      globalCurrentJobIndex += 1;
+
+      let nextJobId = `j${globalCurrentJobIndex}`;
+
+      if (jobs[nextJobId]) {
+        console.log(`jobs is taken ${nextJobId} - dropping`);
+        return;
+      }
+
+      dispatch({ type: "START_JOB", workerId, jobId: nextJobId });
+      await handler(data[globalCurrentJobIndex]);
+      dispatch({ type: "FINISH_JOB", workerId, jobId: nextJobId });
     },
-    [newJobIndex, total, data, handler]
+    [globalCurrentJobIndex, data]
   );
 
   const addWorker = () => {
@@ -196,6 +206,14 @@ export function WorkerProvider<T>({
     }),
     [state]
   );
+  /*
+
+  useEffect(() => {
+    for (let i = 0; i < 10; i += 1) {
+      addWorker();
+    }
+  }, []);
+*/
 
   return (
     <WorkerContext.Provider value={value}>{children}</WorkerContext.Provider>
